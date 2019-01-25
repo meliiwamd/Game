@@ -143,7 +143,7 @@ SDL_Rect platform2Rect;
 
 SDL_Rect wallb_rect;
 
-SDL_Rect wallt_rect;
+SDL_Rect wallt_recdfm,nsdfnsjdnft;
 
 <<<<<<< HEAD
 SDL_Rect owlRect;

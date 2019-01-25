@@ -14,7 +14,7 @@ void platform_down(int y_position, int velocity , int y_position1)
         while(y_position==640)
         do{
             y_position-- ;
-        }
+        }dakfgjnfsafdgksafmgkmsafgknksf
     }
 }
 
