@@ -8,29 +8,33 @@
 #include <SDL2/SDL_ttf.h>
 
 using namespace std;
+
+int main();
+
+
 int velocity = 0;
 
-bool jump=false;
+int score = 0;
 
+int candyscore = 0;
+
+bool jump=false;
 bool rectmovedown=false;
 bool quit = false;
 bool changeplatforms=false;
 bool plarformdown=false;
-
 bool gameover=false;
+bool change_back=false;
+
 const Uint8* currentKeyStates = SDL_GetKeyboardState( NULL ); 
 
 SDL_Texture* loadTexture( std::string path );
 
 SDL_Window* gWindow = NULL;
 
-//The window renderer
 SDL_Renderer* gRenderer = NULL;
 
-//Current displayed texture
-SDL_Texture* gTexture = NULL;
-
-//DL_Surface* gplatform = NULL;
+SDL_Texture* gTexture = NULL ;
 
 SDL_Texture* plattexture = NULL;
 
@@ -46,13 +50,21 @@ SDL_Texture* owl_texture = NULL;
 
 SDL_Texture* wallb_texture = NULL;
 
+SDL_Texture* candytexture = NULL;
+		
+SDL_Surface* gcandy = NULL;
+
 SDL_Texture* wallt_texture = NULL;
 
 SDL_Rect owlRect;
 
+SDL_Rect candyRect;
+
 SDL_Texture* mTexture;
 
 SDL_Texture* mTexture2;
+
+
 
 SDL_Event e;
 
@@ -62,21 +74,27 @@ bool up=true;
 
 int rand_hight()
 {
-	int y_position = (rand()%(350))+100;
+	int y_position = (rand()%(250))+120;
 	return y_position;
+}
+
+int rand_hight2()
+{
+	int c = (rand() % 100) + 50;
+	return c;
 }
 void touching()
 {
 	bool touch = 0;
-	if (owlRect.y <= platform2Rect.y)
+	if (owlRect.y + 60 < platform2Rect.y)
 	{
 		touch = 1;
 	}
 	if(platform2Rect.y-owlRect.y-90<=velocity*(-1) && touch)
 	{
-		rectmovedown=true;
 		velocity=0;
 		owlRect.y = platform2Rect.y - 90;
+		rectmovedown=true;
 	}
 }
 
@@ -85,40 +103,62 @@ void jumping()
 	
 	if( e.type == SDL_KEYDOWN)
     {
-        
-        // switch( e.key.keysym.sym )
-        // {
-        //     case SDLK_SPACE: velocity++  ; 
-        //     cout << 1 <<endl;
-        //     break;
-
-            
-       // }
     	if( currentKeyStates[ SDL_SCANCODE_SPACE ] )
     	{
     		velocity ++;
-    		cout << 1 << endl;
     	}
     }else if(velocity!=0) jump=true;
 }
 	
-	int hight = 5;
-	void move(){
-	if(up){
-		velocity-=1;
-		owlRect.y-=velocity;
-		if(velocity==0) up=false;
-	}else{
-		velocity-=1;
-		owlRect.y-=velocity;
-		if(!up && velocity != 0 && owlRect.y > 640 ) {
-			cout << "game over";
-			gameover=true;
-		}
-		touching();
-	}
+int hight = 5;
+
+void touch_candy()
+{
+	bool touchcandy = false;
+	if(owlRect.y < candyRect.y ){
+		
+		candytexture = NULL;
+		
+		candyscore ++;
+
+		cout << candyscore <<endl ;
+		
+		touchcandy = true;
+
+		if(touchcandy)
+			return;
+
+		
 	}
 
+}
+
+void showcandy(){
+	
+		gcandy =  IMG_Load( "candy.png");
+		candytexture = SDL_CreateTextureFromSurface( gRenderer, gcandy );
+		candyRect.x = 220;
+		candyRect.y = rand_hight2();
+		candyRect.w = 40;
+		candyRect.h = 40;	
+}
+
+void move(){
+	
+	if(up){
+       	velocity -= 1;
+		owlRect.y -= velocity;
+		touch_candy();
+		if(owlRect.y < 0) gameover = true ;
+		if(velocity==0) up = false;
+	} else {
+		velocity-=1;
+		owlRect.y-=velocity;
+		if(!up && velocity != 0 && owlRect.y > 640 ) gameover=true;
+		touching();
+	}
+}
+																																																
 void game_over()
 {
 		SDL_Texture* gameover_texture = NULL;
@@ -129,34 +169,40 @@ void game_over()
 
 		SDL_Rect gameoverrect={0,0,480,640};
 
-		SDL_SetRenderDrawColor(gRenderer,255,255,255,255);
-		SDL_RenderClear(gRenderer);
+		SDL_RenderClear(gRenderer);																							
 		SDL_RenderCopy( gRenderer, gameover_texture, NULL, &gameoverrect);
-		SDL_RenderPresent( gRenderer );
-	
+		SDL_RenderPresent( gRenderer );	
 }
+
 
 void plarform_down()
 {
 	platformRect.y += 10;
 	if(platformRect.y>640) 
 		plarformdown=false;
-}
+}																																																																																																																																																																																																																																																																																																																																																						
 
 void platform2down(){
 	platform2Rect.y+=2;
 	owlRect.y+=2;
-	if(platform2Rect.y>=500) {
-		platform2Rect.y=500;
+	if(platform2Rect.y>=450) {
+		
+		platform2Rect.y=450;
 		owlRect.y = platform2Rect.y - 90;
+		int c =rand()%10;
+		if(c< 7)
+			showcandy();
+		up=true;
 		changeplatforms=true;
+		
+		
 	}
 
 }
 
 void switchplatforms(){
 	platformRect=platform2Rect;
-	owlRect.y = platformRect.y - 900;
+	owlRect.y = platformRect.y - 90;
 	platform2Rect.x = 120;
 	platform2Rect.y = rand_hight();
 	platform2Rect.w = 240;
@@ -164,13 +210,11 @@ void switchplatforms(){
 	changeplatforms=false;
 	jump=false;
 	rectmovedown=false;
+	score++;
+	
 }
 
 
-void candy()
-{
-
-}
 //Screen dimension constants
 const int SCREEN_WIDTH = 480;
 const int SCREEN_HEIGHT = 640;
@@ -183,6 +227,17 @@ bool loadMedia();
 
 void close();
 
+
+// TTF init ();
+// gFont = TTF_OpenFont("lazy.ttf",20);
+// gSurface = TTF_RenderText_Solid(gFont,"score :",gColor);
+// SDL_Surface* mtexture = SDL_CreateTextureFromSurface(gRenderer , gSurface);
+// SDL_FreeSurface(gSurface);
+// SDL_Rect renderQuad3 = {5, 5 , 20 ,20};
+// SDL_RenderCopyEx(gRenderer,mtexture,NULL, &renderQuad3, 0.0 , NULL ,SDL_FLIP_NONE);
+// SDL_DestroyTexture(mtexture);
+// TTF_CloseFont(gFont);
+// TTF_Quit;
 
 
 bool init()
@@ -214,9 +269,7 @@ bool init()
 		SDL_Surface* wall_top = IMG_Load( "melikatiq.png");
 		wallt_texture = SDL_CreateTextureFromSurface( gRenderer, wall_top );
 
-		// SDL_Surface* owltexture =  IMG_Load( "owl.png");
-		// owltexture = SDL_CreateTextureFromSurface( gRenderer, owltexture );
-		// SDL_FreeSurface( gplatform );
+
 
 		
 		platformRect.x = 120;
@@ -235,7 +288,7 @@ bool init()
 		owlRect.h = 100;
 
 		wallt_rect.x = 0;
-		wallt_rect.y = 610;
+		wallt_rect.y = 560;
 		wallt_rect.w = 480;
 		wallt_rect.h = 30;
 
@@ -243,6 +296,8 @@ bool init()
 		wallb_rect.y = 50;
 		wallb_rect.w = 480;
 		wallb_rect.h = 30;
+
+		;
 		
 
 	return success;
@@ -254,7 +309,11 @@ bool loadMedia()
 	bool success = true;
 
 	//Load PNG texture
-	gTexture = loadTexture( "sky.bmp" );
+	if(change_back)
+		gTexture = loadTexture( "sky.png" );
+	else	
+		gTexture = loadTexture( "sky.bmp" );
+	
 	
 
 	return success;
@@ -298,7 +357,9 @@ SDL_Texture* loadTexture( std::string path )
 	return newTexture;
 }
 
-int main( int argc, char* args[] )
+
+
+int main(  )
 {
 
 	srand(time(0));
@@ -318,12 +379,11 @@ int main( int argc, char* args[] )
 			//Event handler
 			
 			
+
 			//main while 
 			while( !quit )
 			{
-
-				int power = 0;
-
+				 
 				if( SDL_PollEvent( &e ) != 0 )
 				{
 					//User requests quit
@@ -347,32 +407,26 @@ int main( int argc, char* args[] )
 						 }
 
 					}
-					//else if (velocity && !jump) jump=true;
+					
 				}
-				//else if(velocity && !jump)
-				//		jump=true;
 				
 
-
-
-
-
+				
 
 
 				if(!gameover){
 					if(jump){
 						if(!rectmovedown){
-							move();
-							
+							move();		
+
 						}
 						else{
 							platform2down();
 							if(changeplatforms)
 								switchplatforms();
 						}
-				}
-				cout << owlRect.y << endl;
-				
+					}
+
 
 				if(plarformdown) plarform_down(); 
 				
@@ -388,15 +442,26 @@ int main( int argc, char* args[] )
 
 				SDL_RenderCopy(gRenderer , owl_texture , NULL ,&owlRect);
 
+				SDL_RenderCopy( gRenderer, candytexture, NULL, &candyRect);
+
 				SDL_RenderCopy( gRenderer, wallb_texture, NULL , &wallb_rect);
 
 				SDL_RenderCopy( gRenderer, wallt_texture, NULL, &wallt_rect);
+
+				
 
 				SDL_Rect fillRect = { 0, 0, SCREEN_WIDTH, 50 }; 
 
 				SDL_SetRenderDrawColor( gRenderer, 0, 0, 0, 255 );
 
 				SDL_RenderFillRect( gRenderer, &fillRect );
+
+				SDL_Rect fillRect2 = { 0, 590, SCREEN_WIDTH, 50 }; 
+
+				SDL_SetRenderDrawColor( gRenderer, 0, 0, 0, 255 );
+
+				SDL_RenderFillRect( gRenderer, &fillRect2 );
+
 
 				// SDL_RenderCopyEx( gRenderer, mTexture, clip, &renderQuad, 0.0 , center, flip );
 				
@@ -411,6 +476,8 @@ int main( int argc, char* args[] )
 				}
 				else{
 					game_over();
+					
+					//replay();
 				}
 				
 			}
