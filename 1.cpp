@@ -2,12 +2,9 @@
 #include <SDL2/SDL_image.h>
 #include <stdio.h>
 #include <string>
+#include <SDL2/SDL_ttf.h>
 
-int rand_hight()
-{
-	int y_position = (rand()%(300))+20;
-	return y_position;
-}
+
 
 //Screen dimension constants
 const int SCREEN_WIDTH = 480;
@@ -118,6 +115,17 @@ SDL_Texture* loadTexture( std::string path )
 
 	return newTexture;
 }
+
+TTF init ();
+gFont = TTF_OpenFont("lazy.ttf",20);
+gSurface = TTF_RenderText_Solid(gFont,"score :",gColor);
+SDL_Surface* mtexture = SDL_CreateTextureFromSurface(gRenderer , gSurface);
+SDL_FreeSurface(gSurface);
+SDL_Rect renderQuad3 = {5, 5 , 20 ,20};
+SDL_RenderCopyEx(gRenderer,mtexture,NULL, &renderQuad3, 0.0 , NULL ,SDL_FLIP_NONE);
+SDL_DestroyTexture(mtexture);
+TTF_CloseFont(gFont);
+TTF_Quit;
 
 int main( int argc, char* args[] )
 {
